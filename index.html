@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+<style>
+#cards {}
+
+.card-outer {
+    float: left;
+    width: 25%;
+    display: block;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.card {
+    border-radius: 5px;
+    border-width: 2px;
+    border-style: solid;
+    border-color: gray;
+    box-sizing: border-box;
+    display: inline-block;
+    min-height: 408px;
+}
+
+.card-surname {
+    cursor: pointer;
+}
+
+.card.selected {
+    border-color: red;
+}
+
+.card .node {
+    width: 11.1111%;
+    float: left;
+    text-align: center;
+}
+.card .node .number {
+    font-size: 12px;
+}
+.card .node .name {
+    font-size: 28px;
+    font-weight: 900;
+}
+#result-box .card {
+    height: 100%;
+    width: 100%;
+}
+
+</style>
+</head>
+<body>
+    <div id="cards">
+
+    </div>
+<script>
+const surnames = '王李张刘陈杨黄吴赵周徐孙马朱胡林郭何高罗郑梁谢宋唐许邓冯韩曹曾彭萧蔡潘田董袁于余叶蒋杜苏魏程吕丁沈任姚卢傅钟姜崔谭廖范汪陆金石戴贾韦夏邱方侯邹熊孟秦白江阎薛尹段雷黎史龙陶贺顾毛郝龚邵万钱严赖覃洪武莫孔汤向常温康施文牛樊葛邢安齐易乔伍庞颜倪庄聂章鲁岳翟殷詹申欧耿关兰焦俞左柳甘祝包宁'.split('').slice(0, 126);
+
+function makeCards(surnames) {
+    const numbers = [];
+    for (let i = 1; i < 127; i++) {
+        numbers.push(i);
+    }
+
+    return [
+        numbers.filter((d) => { return (d >> 0) & 0b1 === 1; }).map((d) => { return {surname: surnames[d - 1], value: d}}),
+        numbers.filter((d) => { return (d >> 1) & 0b1 === 1; }).map((d) => { return {surname: surnames[d - 1], value: d}}),
+        numbers.filter((d) => { return (d >> 2) & 0b1 === 1; }).map((d) => { return {surname: surnames[d - 1], value: d}}),
+        numbers.filter((d) => { return (d >> 3) & 0b1 === 1; }).map((d) => { return {surname: surnames[d - 1], value: d}}),
+        numbers.filter((d) => { return (d >> 4) & 0b1 === 1; }).map((d) => { return {surname: surnames[d - 1], value: d}}),
+        numbers.filter((d) => { return (d >> 5) & 0b1 === 1; }).map((d) => { return {surname: surnames[d - 1], value: d}}),
+        numbers.filter((d) => { return (d >> 6) & 0b1 === 1; }).map((d) => { return {surname: surnames[d - 1], value: d}})
+    ];
+}
+
+const cards = makeCards(surnames);
+
+const root = document.querySelector('#cards');
+for (let i = 0; i < cards.length; i++) {
+    const card = cards[i];
+    const outer = document.createElement('div');
+    outer.classList.add('card-outer');
+    const item = document.createElement('div');
+    item.id = `card-${i+1}`;
+    item.classList.add('card');
+    item.classList.add('card-surname')
+    item.dataset['order'] = i + 1;
+    for (const {surname, value} of card) {
+        const node = document.createElement('div');
+        node.classList.add('node');
+        const num = document.createElement('div');
+        num.classList.add('number');
+        num.textContent = value;
+        node.appendChild(num)
+        const name = document.createElement('div');
+        name.classList.add('name');
+        name.textContent = surname;
+        node.appendChild(name);
+        item.appendChild(node);
+    }
+    outer.appendChild(item);
+    root.appendChild(outer);
+}
+
+const resultBox = document.createElement('div');
+resultBox.id = 'result-box';
+resultBox.classList.add('card-outer');
+resultBox.innerHTML = `<div class="card"><div>请选择中带有你姓氏的所有卡片</div><div class="node"><div class="number"></div><div class="name"></div></div></div>`;
+root.appendChild(resultBox);
+
+function closest(node, matcher) {
+    let parent = node.parentElement;
+    while (!matcher(parent)) {
+        parent = parent.parentElement;
+    }
+    return parent;
+}
+
+
+root.addEventListener('click', function(e) {
+    console.log('click');
+    const cardNode = closest(e.srcElement, (node) => {
+        return Array.from(node.classList).includes('card-surname');
+    });
+    cardNode.classList.toggle('selected');
+
+    const result = Array.from(root.querySelectorAll('.card.selected')).reduceRight((pre, d) => {
+        return pre + (1 << (parseInt(d.dataset['order'], 10) - 1));
+    }, 0);
+
+    if (result > 0) {
+        resultBox.querySelector('.card .name').textContent = surnames[result - 1];
+        resultBox.querySelector('.card .number').textContent = result;
+    } else {
+        resultBox.querySelector('.card .name').textContent = '';
+        resultBox.querySelector('.card .number').textContent = '';
+    }
+});
+
+</script>
+</body>
+</html>
